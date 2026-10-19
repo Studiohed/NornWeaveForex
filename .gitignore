@@ -12,3 +12,5 @@ data/candles/
 data/cache/
 *.state.json
 KILL_SWITCH
+# local tooling downloads (actionlint etc.)
+tools/

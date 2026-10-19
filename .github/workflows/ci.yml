@@ -31,7 +31,7 @@ jobs:
         run: python -m pip install --upgrade pip && python -m pip install -e ".[dev]"
       - name: Run tests
         run: python -m pytest -q
-      - name: Smoke: demo + backtest (synthetic data)
+      - name: Smoke demo and backtest (synthetic data)
         run: |
           python -m nornweave_forex demo
           python -m nornweave_forex backtest --config configs/forex.yaml
