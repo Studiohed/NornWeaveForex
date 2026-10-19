@@ -1,0 +1,99 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: tests (${{ matrix.os }}, py${{ matrix.python }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        python: ["3.11", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+          cache: pip
+      - name: Install package + dev extras
+        run: python -m pip install --upgrade pip && python -m pip install -e ".[dev]"
+      - name: Run tests
+        run: python -m pytest -q
+      - name: Smoke: demo + backtest (synthetic data)
+        run: |
+          python -m nornweave_forex demo
+          python -m nornweave_forex backtest --config configs/forex.yaml
+
+  package:
+    name: build wheel + sdist, install wheel
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+          cache: pip
+      - run: python -m pip install --upgrade pip build
+      - name: Build
+        run: python -m build --wheel --sdist
+      - name: Install wheel into a clean venv
+        run: |
+          python -m venv /tmp/pkgtest
+          /tmp/pkgtest/bin/pip install dist/*.whl
+          /tmp/pkgtest/bin/nornweave-forex --help
+          /tmp/pkgtest/bin/nornweave-forex demo --config configs/forex.yaml
+      - name: Verify sdist carries deployment files
+        run: |
+          python - <<'PY'
+          import tarfile, glob
+          names = tarfile.open(glob.glob("dist/*.tar.gz")[0]).getnames()
+          needed = ["configs/forex.yaml", "deploy/linux/install.sh",
+                    "deploy/windows/install-mt5-server.ps1", "docs/REVIEW.md"]
+          for item in needed:
+              assert any(n.endswith(item) for n in names), f"missing from sdist: {item}"
+          print("sdist contents OK")
+          PY
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: dist/
+
+  linux-install:
+    name: Linux systemd installer (dry run)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.13"
+      - name: Validate scripts
+        run: |
+          bash -n deploy/linux/install.sh
+          python -c "import yaml; yaml.safe_load(open('configs/forex.yaml'))"
+          python -c "import yaml; yaml.safe_load(open('docker-compose.yml'))"
+      - name: Run installer (no service start)
+        run: sudo -E env PATH="$PATH" ./deploy/linux/install.sh --no-enable
+      - name: Verify installed layout
+        run: |
+          test -x /opt/nornweave-forex/.venv/bin/nornweave-forex
+          test -f /etc/nornweave/forex.yaml
+          test -f /etc/nornweave/nornweave.env
+          test -f /etc/systemd/system/nornweave-forex.service
+          sudo -u nornweave /opt/nornweave-forex/.venv/bin/nornweave-forex --help
+          grep -q 'NORNWEAVE_MT5_SECRET=' /etc/nornweave/nornweave.env
+          if grep -q 'replace_me_with_a_long_random_string' /etc/nornweave/nornweave.env; then
+            echo "installer left the placeholder secret" >&2
+            exit 1
+          fi

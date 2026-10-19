@@ -53,7 +53,7 @@ chown -R "${APP_USER}:${APP_USER}" "${APP_DIR}" "${STATE_DIR}"
 log "syncing sources"
 tar -C "${REPO_DIR}" -cf - \
   --exclude=.git --exclude=.venv --exclude=.venv-pkgtest \
-  --exclude=state --exclude=dist --exclude=build \
+  --exclude=state --exclude=dist --exclude=build --exclude=.env \
   --exclude=__pycache__ --exclude='*.pyc' --exclude=.pytest_cache \
   . | tar -C "${APP_DIR}" -xf -
 
@@ -95,9 +95,13 @@ fi
 log "installing ${SERVICE}.service"
 install -m 0644 "${APP_DIR}/deploy/linux/${SERVICE}.service" \
   "/etc/systemd/system/${SERVICE}.service"
-systemctl daemon-reload
-if [[ "${ENABLE}" -eq 1 ]]; then
-  systemctl enable "${SERVICE}.service"
+if command -v systemctl >/dev/null 2>&1; then
+  systemctl daemon-reload || true
+  if [[ "${ENABLE}" -eq 1 ]]; then
+    systemctl enable "${SERVICE}.service"
+  fi
+else
+  log "systemd is not available here; unit installed but not enabled"
 fi
 
 cat <<EOF
