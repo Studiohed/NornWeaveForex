@@ -12,6 +12,8 @@ Group=nornweave
 WorkingDirectory=/var/lib/nornweave
 EnvironmentFile=/etc/nornweave/nornweave.env
 Environment=PYTHONUNBUFFERED=1
+# /opt is read-only under ProtectSystem=strict; never try to write .pyc files.
+Environment=PYTHONDONTWRITEBYTECODE=1
 
 ExecStart=/opt/nornweave-forex/.venv/bin/nornweave-forex live \
     --config /etc/nornweave/forex.yaml \
