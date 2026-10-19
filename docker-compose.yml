@@ -1,0 +1,30 @@
+# NornWeaveForex bot on Docker.
+#
+#   cp .env.example .env      # set MT5_HOST / NORNWEAVE_MT5_SECRET etc.
+#   docker compose up -d --build
+#   docker compose logs -f
+#
+# The MT5 terminal and nornweave-mt5-server run on the Windows host with a
+# reachable IP; set MT5_HOST to that address.
+services:
+  bot:
+    build: .
+    image: nornweave-forex:latest
+    container_name: nornweave-forex
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      # Your live config (read-only) and the persisted state (named volume).
+      - ./configs/forex.yaml:/app/configs/forex.yaml:ro
+      - nornweave-state:/var/lib/nornweave
+    # The CLI persists state on SIGTERM; give it time.
+    stop_grace_period: 90s
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "5"
+
+volumes:
+  nornweave-state:

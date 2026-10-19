@@ -1,0 +1,14 @@
+.env
+.venv*/
+__pycache__/
+*.pyc
+.pytest_cache/
+*.egg-info/
+build/
+dist/
+state/
+reports/
+data/candles/
+data/cache/
+*.state.json
+KILL_SWITCH

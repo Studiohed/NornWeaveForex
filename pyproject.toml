@@ -1,0 +1,58 @@
+[build-system]
+requires = ["setuptools>=77"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "nornweave-forex"
+version = "0.1.0"
+description = "NORN WEAVE Forex port: MT5-bridged trading bot for major currency pairs"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "NornWeave" }]
+keywords = ["forex", "trading", "metatrader5", "mt5", "nornweave"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Financial and Insurance Industry",
+    "Operating System :: POSIX :: Linux",
+    "Operating System :: Microsoft :: Windows",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Office/Business :: Financial :: Investment",
+]
+dependencies = [
+    "numpy>=1.26",
+    "PyYAML>=6.0",
+    "rpyc>=6.0",
+]
+
+[project.optional-dependencies]
+# Runs on the Windows side where the MT5 terminal is installed.
+mt5server = [
+    "MetaTrader5>=5.0.45",
+    "rpyc>=6.0",
+]
+dashboard = [
+    "fastapi>=0.110",
+    "uvicorn>=0.27",
+]
+dev = [
+    "build>=1.2",
+    "pytest>=8.0",
+    "pytest-cov>=5.0",
+]
+
+[project.scripts]
+nornweave-forex = "nornweave_forex.cli:main"
+nornweave-mt5-server = "nornweave_forex.mt5_server.server:main"
+
+[tool.setuptools.packages.find]
+include = ["nornweave_forex*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-q"
+filterwarnings = ["error::RuntimeWarning"]

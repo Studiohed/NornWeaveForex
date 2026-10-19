@@ -1,0 +1,41 @@
+[Unit]
+Description=NornWeaveForex trading bot (MT5 bridge client)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=nornweave
+Group=nornweave
+
+# The runner stores its state and the KILL_SWITCH file in the working directory.
+WorkingDirectory=/var/lib/nornweave
+EnvironmentFile=/etc/nornweave/nornweave.env
+Environment=PYTHONUNBUFFERED=1
+
+ExecStart=/opt/nornweave-forex/.venv/bin/nornweave-forex live \
+    --config /etc/nornweave/forex.yaml \
+    --state /var/lib/nornweave/live.json \
+    --interval-seconds 30
+
+Restart=on-failure
+RestartSec=10
+# SIGTERM is handled by the CLI: it persists state before exiting.
+KillSignal=SIGTERM
+TimeoutStopSec=90
+StandardOutput=journal
+StandardError=journal
+
+# Hardening: the bot only needs its state directory writable.
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectHome=true
+ProtectSystem=strict
+ProtectKernelTunables=true
+ProtectControlGroups=true
+RestrictSUIDSGID=true
+ReadWritePaths=/var/lib/nornweave
+UMask=0077
+
+[Install]
+WantedBy=multi-user.target

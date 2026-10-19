@@ -1,0 +1,10 @@
+include README.md
+include LICENSE
+include pyproject.toml
+include .env.example
+include MANIFEST.in
+recursive-include configs *.yaml
+recursive-include docs *.md
+recursive-include deploy *.sh *.ps1 *.service *.env.example *.md *.yml *.yaml
+recursive-include tests *.py
+recursive-include nornweave_forex *.py

@@ -1,0 +1,74 @@
+# NornWeaveForex — default live/backtest configuration.
+#
+# Values are tuned for H2 bars on the 8 majors with an Alfa-Forex MT5 account.
+# Every key here is validated: a typo raises ConfigError instead of being ignored.
+
+interval: "120"
+
+portfolio:
+  symbols:
+    - EURUSD
+    - GBPUSD
+    - USDJPY
+    - AUDUSD
+    - USDCAD
+    - USDCHF
+    - NZDUSD
+    - EURJPY
+  max_positions: 2
+
+strategy:
+  focus_level: 13
+  ema_scale_ratio: 5.0
+  adx_period: 14
+  adx_threshold: 20.5
+  atr_period: 14
+  require_dow_structure: true
+  dow_mode: structure
+  dow_neutral_mode: block
+  exit_on_dow_reversal: true
+  daily_filter_enabled: true
+  daily_fib_mode: pivot_leg
+  daily_focus_level: 5
+  daily_trend_mode: dow_then_ema
+  daily_neutral_policy: block
+  daily_missing_policy: block
+  footprint_enabled: false
+
+risk:
+  # 100 pips on EURUSD: a directional FX move needs room, but a 5% stop (the
+  # crypto default) would be 500 pips and risk a tenth of the account per trade.
+  stop_loss_pct: -0.01
+  be_trigger_pct: 0.015
+  be_mode: profit_pct
+  be_buffer_pct: 0.001
+  stop_trigger: close
+  exit_fill: bar_close
+  exit_order: tp_first
+  be_arm_on: extreme
+  be_exit_trigger: follow
+  atr_factor: 3.8
+  tp_atr_multiples: [1.0, 2.0, 3.0]
+  tp_weights: [0.30, 0.30, 0.30]
+  tp_weight_basis: initial
+  tp_anchor: entry
+  size_mode: risk
+  risk_per_trade_pct: 0.01
+  portfolio_risk_pct: 0.05
+  leverage: 30.0
+  min_notional: 0.0
+  max_risk_per_trade_pct: 0.02
+
+backtest:
+  initial_equity: 10000.0
+  # Alfa-Forex majors are spread-only; the engine charges the spread itself.
+  taker_fee: 0.0
+  maker_fee: 0.0
+  slippage_bps: 1.0
+  intrabar_priority: sl_first
+  swap_enabled: true
+  warmup_bars: 300
+  preroll_bars: 600
+
+tuning:
+  enabled: false
