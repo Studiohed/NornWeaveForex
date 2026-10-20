@@ -78,9 +78,10 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.13"
-      - name: Validate scripts
+      - name: Validate scripts and configs
         run: |
           bash -n deploy/linux/install.sh
+          python -m pip install --quiet pyyaml
           python -c "import yaml; yaml.safe_load(open('configs/forex.yaml'))"
           python -c "import yaml; yaml.safe_load(open('docker-compose.yml'))"
       - name: Run installer (no service start)
