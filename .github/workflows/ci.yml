@@ -85,7 +85,7 @@ jobs:
           python -c "import yaml; yaml.safe_load(open('configs/forex.yaml'))"
           python -c "import yaml; yaml.safe_load(open('docker-compose.yml'))"
       - name: Run installer (no service start)
-        run: sudo -E env PATH="$PATH" ./deploy/linux/install.sh --no-enable
+        run: sudo -E env PATH="$PATH" bash deploy/linux/install.sh --no-enable
       - name: Verify installed layout
         run: |
           test -x /opt/nornweave-forex/.venv/bin/nornweave-forex
