@@ -93,8 +93,9 @@ jobs:
           test -f /etc/nornweave/nornweave.env
           test -f /etc/systemd/system/nornweave-forex.service
           sudo -u nornweave /opt/nornweave-forex/.venv/bin/nornweave-forex --help
-          grep -q 'NORNWEAVE_MT5_SECRET=' /etc/nornweave/nornweave.env
-          if grep -q 'replace_me_with_a_long_random_string' /etc/nornweave/nornweave.env; then
+          # The env file is 0640 root:nornweave, so read it with sudo.
+          sudo grep -q 'NORNWEAVE_MT5_SECRET=' /etc/nornweave/nornweave.env
+          if sudo grep -q 'replace_me_with_a_long_random_string' /etc/nornweave/nornweave.env; then
             echo "installer left the placeholder secret" >&2
             exit 1
           fi
